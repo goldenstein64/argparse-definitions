@@ -1,9 +1,28 @@
 ---@meta
 
+--#region Parser
+
 ---A class that parses arguments from a command-line interface.
 ---@class argparse.Parser
----@operator call({ name?: string, description?: string, epilog?: string }): argparse.Parser
+---@overload fun(properties: argparse.Parser.PropertiesTable): argparse.Parser
 local Parser = {}
+
+---@class argparse.Parser.PropertiesTable
+---@field name? string
+---@field description? string
+---@field epilog? string
+---@field usage? string -- The usage message.
+---@field help? string -- The help message.
+---@field require_command? boolean -- Does this parser require a command to be used?
+---@field handle_options? boolean -- Should options be parsed?
+---@field add_help? boolean|string|argparse.Option.PropertiesTable -- Set whether a help option exists or its properties.
+---@field command_target? string -- Where to put the invoked command name in the results table.
+---@field usage_max_width? integer -- The maximum width of the usage message.
+---@field usage_margin? integer -- The margin of the usage message when the text wraps to the next line.
+---@field help_max_width? integer -- The maximum width of the help message.
+---@field help_usage_margin? integer -- The margin of the help message's first column when the text wraps to the next line.
+---@field help_description_margin? integer -- The margin of the help message's second column when the text wraps to the next line.
+---@field help_vertical_space? integer -- How many lines are inserted between elements in the help message.
 
 ---Returns a table with processed data from the command line or `argv` array.
 ---
@@ -79,11 +98,11 @@ function Parser:command_target(command_target) end
 function Parser:require_command(require_command) end
 
 ---Add a positional argument to the parser.
----@param name string
----@param description? string
----@param default? any
----@param convert? function|table
----@param args? number|string -- Sets how many command line arguments the argument consumes. Default is 1.
+---@param name string -- The argument's name, represented in the usage message as `<name>`.
+---@param description? string -- The argument's description, shown in the second column of the help message.
+---@param default? any -- The default value of this argument if not provided.
+---@param convert? argparse.Converter|argparse.Converter[]|{ [string]: any } -- Perform automatic validation and conversion on arguments.
+---@param args? integer|string -- Sets how many command line arguments the argument consumes. Default is 1.
 ---@return argparse.Argument
 ---
 ---Script:
@@ -101,6 +120,131 @@ function Parser:require_command(require_command) end
 ---```
 ---
 function Parser:argument(name, description, default, convert, args) end
+
+---Add an option to the parser.
+---@param name string -- This option's name or names, represented in the usage message as `[-n <name>]`
+---@param description? string -- This option's description, shown in the second column of the help message.
+---@param default? any -- The default value of this option if not provided.
+---@param convert? argparse.Converter|argparse.Converter[]|{ [string]: any } -- Perform automatic validation and conversion on arguments.
+---@param args? integer|string -- The number of arguments consumed.
+---@param count? integer|string -- How many times an option can be invoked.
+---@return argparse.Option
+---
+---The `args` property is interpreted as follows:
+---
+-- | Value                                      | Interpretation            |
+-- |:-------------------------------------------|:--------------------------|
+-- | Number `N`                                 | Exactly `N` arguments     |
+-- | String `A-B` where `A` and `B` are numbers | From `A` to `B` arguments |
+-- | String `N+`, where `N` is a number         | `N` or more arguments     |
+-- | String `?`                                 | An optional argument      |
+-- | String `*`                                 | Any number of arguments   |
+-- | String `+`                                 | At least one argument     |
+---
+---The `count` property is interpreted in the same way, except it describes how
+---many times an option can be used.
+---
+---Script:
+---```lua
+----- These lines are equivalent:
+---parser:option "-f" "--from"
+---parser:option "-f --from"
+---```
+---
+---Console:
+---```sh
+---$ lua script.lua --from there
+---$ lua script.lua --from=there
+---$ lua script.lua -f there
+---$ lua script.lua -fthere
+---# -> {
+---#     from = "there"
+---# }
+---```
+---
+---The default index used to store arguments passed to it is the first "long
+---alias" (an alias starting with two control characters, typically hyphens) or
+---just the first alias, without control characters. Hyphens in the default
+---index are replaced with underscores.
+---
+-- | Option's aliases     | Location of option's arguments |
+-- |:---------------------|:-------------------------------|
+-- | `-o`                 | `args.o`                       |
+-- | `-o` `--output`      | `args.output`                  |
+-- | `-s` `--from-server` | `args.from_server`             |
+---
+---As with arguments, the index can be explicitly set using `target` property.
+function Parser:option(name, description, default, convert, args, count) end
+
+---Add a flag to the parser, which is almost identical to options, except that 
+---they don't take an argument by default.
+---@param name string -- This flag's name or names, represented in the usage message as `[-n <name>]`
+---@param description? string -- This flag's description, shown in the second column of the help message.
+---@param default? any -- The default value of this flag if not provided.
+---@param convert? argparse.Converter|argparse.Converter[]|{ [string]: any } -- Perform automatic validation and conversion on arguments.
+---@param args? integer|string -- The number of arguments consumed.
+---@param count? integer|string -- How many times an flag can be invoked.
+---@return argparse.Option
+---
+---The `args` property is interpreted as follows:
+---
+-- | Value                                      | Interpretation            |
+-- |:-------------------------------------------|:--------------------------|
+-- | Number `N`                                 | Exactly `N` arguments     |
+-- | String `A-B` where `A` and `B` are numbers | From `A` to `B` arguments |
+-- | String `N+`, where `N` is a number         | `N` or more arguments     |
+-- | String `?`                                 | An optional argument      |
+-- | String `*`                                 | Any number of arguments   |
+-- | String `+`                                 | At least one argument     |
+---
+---The `count` property is interpreted in the same way, except it describes how
+---many times an option can be used.
+---
+---Script:
+---```lua
+---parser:flag("-q --quiet")
+---```
+---
+---Console:
+---```sh
+---$ lua script.lua -q
+---# -> {
+---#     quiet = true
+---# }
+---```
+function Parser:flag(name, description, default, convert, args, count) end
+
+---Add a command, which is a subparser that is invoked when its name is passed
+---as an argument.
+---@param name string -- The name used to invoke this command.
+---@param description? string
+---@param epilog? string
+---@return argparse.Command
+---
+---Script:
+---```lua
+---parser:command "install i"
+---```
+---
+---Console:
+---```sh
+---$ lua script.lua install
+---# -> {
+---#     install = true
+---# }
+---```
+---
+---A typo will result in an appropriate error message.
+---
+---Console:
+---```sh
+---$ lua script.lua instal
+---# Usage: script.lua [-h] <command> ...
+---#
+---# Error: unknown command 'instal'
+---# Did you mean 'install'?
+---```
+function Parser:command(name, description, epilog) end
 
 ---Mark a group of arguments and options as mutually exclusive.
 ---@generic self
@@ -521,13 +665,31 @@ function Parser:add_help_command(config) end
 ---```
 function Parser:handle_options(handle_options) end
 
+--#endregion
+
+--#region Argument
+
 ---@class argparse.Argument
+---@overload fun(properties: argparse.Argument.PropertiesTable): argparse.Argument
 local Argument = {}
+
+---@class argparse.Argument.PropertiesTable
+---@field name? string -- Set the argument's name, represented in the usage message as `<name>`.
+---@field description? string -- Set the argument's description, shown in the second column of the help message.
+---@field default? any -- Set the default value of this argument if not provided.
+---@field convert? argparse.Converter|argparse.Converter[]|{ [string]: any } -- Perform automatic validation and conversion on arguments.
+---@field args? integer|string -- Set the number of arguments consumed.
+---@field target? string -- Set where this argument will appear in the result table.
+---@field defmode? string -- Regulate how argparse should use the default value of an element.
+---@field show_default? boolean -- Set whether this argument's default value is shown in the help message.
+---@field argname? string -- Set the placeholder name(s) for this argument in the usage message.
+---@field choices? string[] -- Restrict this argument to a set of choices.
+---@field action? argparse.BuiltInActions|fun(args: { [string]: any }, target: string, input: string|string[], overwrite: boolean)
 
 ---Set the number arguments consumed.
 ---@generic self
 ---@param self self
----@param args number|string
+---@param args integer|string
 ---@return self
 ---
 ---The `args` property is interpreted as follows:
@@ -566,7 +728,7 @@ local Argument = {}
 ---```
 function Argument:args(args) end
 
----Restrict an argument to a set of choices.
+---Restrict this argument to a set of choices.
 ---@generic self
 ---@param self self
 ---@param choices string[]
@@ -739,7 +901,7 @@ function Argument:defmode(defmode) end
 
 ---@generic self
 ---@param self self
----@param action fun(args: {[string]: any}, target: string, input: string|string[], overwrite: boolean)
+---@param action argparse.Argument.Action
 ---@return self
 ---@diagnostic disable-next-line: duplicate-set-field
 function Argument:action(action) end
@@ -965,7 +1127,7 @@ function Argument:init(init) end
 ---@return self
 function Argument:hidden(hidden) end
 
----Set the placeholder(s) for the argument in the usage message.
+---Set the placeholder name(s) for the argument in the usage message.
 ---@generic self
 ---@param self self
 ---@param argname string|string[]
@@ -994,100 +1156,18 @@ function Argument:description(description) end
 ---@return self
 function Argument:target(target) end
 
----Add an option to the parser.
----@param name string
----@param description? string
----@param default? any
----@param convert? function|table
----@param args? number|string
----@param count? number|string
----@return argparse.Option
----
----The `args` property is interpreted as follows:
----
--- | Value                                      | Interpretation            |
--- |:-------------------------------------------|:--------------------------|
--- | Number `N`                                 | Exactly `N` arguments     |
--- | String `A-B` where `A` and `B` are numbers | From `A` to `B` arguments |
--- | String `N+`, where `N` is a number         | `N` or more arguments     |
--- | String `?`                                 | An optional argument      |
--- | String `*`                                 | Any number of arguments   |
--- | String `+`                                 | At least one argument     |
----
----The `count` property is interpreted in the same way, except it describes how
----many times an option can be used.
----
----Script:
----```lua
------ These lines are equivalent:
----parser:option "-f" "--from"
----parser:option "-f --from"
----```
----
----Console:
----```sh
----$ lua script.lua --from there
----$ lua script.lua --from=there
----$ lua script.lua -f there
----$ lua script.lua -fthere
----# -> {
----#     from = "there"
----# }
----```
----
----The default index used to store arguments passed to it is the first "long
----alias" (an alias starting with two control characters, typically hyphens) or
----just the first alias, without control characters. Hyphens in the default
----index are replaced with underscores.
----
--- | Option's aliases     | Location of option's arguments |
--- |:---------------------|:-------------------------------|
--- | `-o`                 | `args.o`                       |
--- | `-o` `--output`      | `args.output`                  |
--- | `-s` `--from-server` | `args.from_server`             |
----
----As with arguments, the index can be explicitly set using `target` property.
-function Parser:option(name, description, default, convert, args, count) end
+--#endregion
 
----Almost identical to options, except that they don't take an argument by default.
----@param name string
----@param description? string
----@param default? any
----@param convert? argparse.Converter|argparse.Converter[]|{ [string]: any }
----@param args? number|string
----@param count? number|string
----@return argparse.Option
----
----The `args` property is interpreted as follows:
----
--- | Value                                      | Interpretation            |
--- |:-------------------------------------------|:--------------------------|
--- | Number `N`                                 | Exactly `N` arguments     |
--- | String `A-B` where `A` and `B` are numbers | From `A` to `B` arguments |
--- | String `N+`, where `N` is a number         | `N` or more arguments     |
--- | String `?`                                 | An optional argument      |
--- | String `*`                                 | Any number of arguments   |
--- | String `+`                                 | At least one argument     |
----
----The `count` property is interpreted in the same way, except it describes how
----many times an option can be used.
----
----Script:
----```lua
----parser:flag("-q --quiet")
----```
----
----Console:
----```sh
----$ lua script.lua -q
----# -> {
----#     quiet = true
----# }
----```
-function Parser:flag(name, description, default, convert, args, count) end
+--#region Option
 
 ---@class argparse.Option: argparse.Argument
+---@overload fun(properties: argparse.Option.PropertiesTable): argparse.Option
 local Option = {}
+
+---@class argparse.Option.PropertiesTable : argparse.Argument.PropertiesTable
+---@field count? string|integer -- How many times an option can be invoked.
+---@field hidden_name? string -- Alias(es) hidden from help messages.
+---@field overwrite? boolean -- Is it possible to use this option too many times?
 
 ---Set this option's name or names, represented in the usage message as `[-n <name>]`
 ---@generic self
@@ -1107,8 +1187,21 @@ function Option:description(description) end
 ---Set the number of arguments consumed.
 ---@generic self
 ---@param self self
----@param args number|string
+---@param args integer|string
 ---@return self
+---
+---The `args` property is interpreted as follows:
+---
+-- | Value                                      | Interpretation            |
+-- |:-------------------------------------------|:--------------------------|
+-- | Number `N`                                 | Exactly `N` arguments     |
+-- | String `A-B` where `A` and `B` are numbers | From `A` to `B` arguments |
+-- | String `N+`, where `N` is a number         | `N` or more arguments     |
+-- | String `?`                                 | An optional argument      |
+-- | String `*`                                 | Any number of arguments   |
+-- | String `+`                                 | At least one argument     |
+---
+---If any number other than one argument is consumed, a table is used to store the data.
 ---
 ---Script:
 ---```lua
@@ -1167,7 +1260,7 @@ function Option:choices(choices) end
 ---the `args` property/argument.
 ---@generic self
 ---@param self self
----@param count number|string
+---@param count integer|string
 ---@return self
 ---
 ---Script:
@@ -1221,41 +1314,28 @@ function Option:hidden_name(hidden_name) end
 ---@return self
 function Option:overwrite(overwrite) end
 
----Add a command, which is a subparser that is invoked when its name is passed
----as an argument.
----@param name string
----@param description? string
----@param epilog? string
----@return argparse.Command
----
----Script:
----```lua
----parser:command "install i"
----```
----
----Console:
----```sh
----$ lua script.lua install
----# -> {
----#     install = true
----# }
----```
----
----A typo will result in an appropriate error message.
----
----Console:
----```sh
----$ lua script.lua instal
----# Usage: script.lua [-h] <command> ...
----#
----# Error: unknown command 'instal'
----# Did you mean 'install'?
----```
-function Parser:command(name, description, epilog) end
+--#endregion
+
+--#region Command
 
 ---A subparser that is invoked when its name is passed as an argument.
 ---@class argparse.Command : argparse.Parser
+---@overload fun(properties: argparse.Command.PropertiesTable): argparse.Command
 local Command = {}
+
+---@class argparse.Command.PropertiesTable : argparse.Parser.PropertiesTable
+---@field name? string -- The name used to invoke this command.
+---@field summary? string -- The description for commands shown in the parent parser help message.
+---@field hidden? boolean -- Whether this command is hidden from help messages.
+---@field hidden_name? string -- Alias(es) hidden from help messages.
+---@field target? string -- Set the following index in the result table to true when this command is invoked.
+
+---Set the name used to invoke this command.
+---@generic self
+---@param self self
+---@param name string
+---@return self
+function Command:name(name) end
 
 ---Set the description for commands shown in the parent parser help message.
 ---@generic self
@@ -1313,7 +1393,13 @@ function Command:hidden_name(hidden_name) end
 ---@return self
 function Command:target(target) end
 
+--#endregion
+
 ---@alias argparse.Converter fun(value: string): (any, err: string?)
+
+---@alias argparse.Parser.Action fun(args: { [string]: any }, command_name: string)
+
+---@alias argparse.Argument.Action fun(args: { [string]: any }, target: string, input: string|string[], overwrite: boolean)
 
 ---@alias argparse.BuiltInActions
 ---| "store"

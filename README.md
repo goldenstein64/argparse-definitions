@@ -24,9 +24,15 @@ The types provided by this library are:
 * Classes, given as `argparse.[CLASS NAME]`. Every class is listed below:
   * `argparse`
   * `argparse.Parser`
+	* `argparse.Parser.PropertiesTable`
 	* `argparse.Argument`
+	* `argparse.Argument.PropertiesTable`
 	* `argparse.Option`
+	* `argparse.Option.PropertiesTable`
 	* `argparse.Command`
+	* `argparse.Command.PropertiesTable`
 * Aliases, given as `argparse.[ALIAS NAME]`. Every alias is listed blow:
   * `argparse.Converter`
+	* `argparse.Argument.Action`
+	* `argparse.Parser.Action`
 	* `argparse.BuiltInActions`
