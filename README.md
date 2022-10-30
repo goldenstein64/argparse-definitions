@@ -1,4 +1,4 @@
-# argparse Definitions
+# Argparse Definitions
 
 Definitions for [luarocks/argparse](https://github.com/luarocks/argparse) 0.7.1 to use with [sumneko/lua-language-server](https://github.com/sumneko/lua-language-server). The annotations have been manually re-written directly from the [docs](https://argparse.readthedocs.io/en/stable/parsers.html) and [source code](https://github.com/luarocks/argparse) to be parsable by the LSP.
 
