@@ -4,7 +4,7 @@
 
 ---A class that parses arguments from a command-line interface.
 ---@class argparse.Parser
----@overload fun(properties: argparse.Parser.PropertiesTable): argparse.Parser
+---@operator call(argparse.Parser.PropertiesTable): argparse.Parser
 local Parser = {}
 
 ---@class argparse.Parser.PropertiesTable
@@ -670,7 +670,7 @@ function Parser:handle_options(handle_options) end
 --#region Argument
 
 ---@class argparse.Argument
----@overload fun(properties: argparse.Argument.PropertiesTable): argparse.Argument
+---@operator call(argparse.Argument.PropertiesTable): argparse.Argument
 local Argument = {}
 
 ---@class argparse.Argument.PropertiesTable
@@ -1160,8 +1160,8 @@ function Argument:target(target) end
 
 --#region Option
 
----@class argparse.Option: argparse.Argument
----@overload fun(properties: argparse.Option.PropertiesTable): argparse.Option
+---@class argparse.Option : argparse.Argument
+---@operator call(argparse.Option.PropertiesTable): argparse.Option
 local Option = {}
 
 ---@class argparse.Option.PropertiesTable : argparse.Argument.PropertiesTable
@@ -1320,7 +1320,7 @@ function Option:overwrite(overwrite) end
 
 ---A subparser that is invoked when its name is passed as an argument.
 ---@class argparse.Command : argparse.Parser
----@overload fun(properties: argparse.Command.PropertiesTable): argparse.Command
+---@operator call(argparse.Command.PropertiesTable): argparse.Command
 local Command = {}
 
 ---@class argparse.Command.PropertiesTable : argparse.Parser.PropertiesTable
