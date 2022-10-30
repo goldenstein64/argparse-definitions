@@ -2,6 +2,8 @@
 
 Definitions for [luarocks/argparse](https://github.com/luarocks/argparse) 0.7.1 to use with [sumneko/lua-language-server](https://github.com/sumneko/lua-language-server). The annotations have been manually re-written directly from the [docs](https://argparse.readthedocs.io/en/stable/parsers.html) and [source code](https://github.com/luarocks/argparse) to be parsable by the LSP.
 
+Some features are missing from the library simply because the LSP doesn't support them. The most pressing feature is currently autocomplete for arguments to the `call` operator on classes. Supporting this would mean autocomplete is available for keys in property tables when creating instances and assigning their properties with a table, like `argparse() { [keys here] }`.
+
 ## Usage
 
 ```jsonc
