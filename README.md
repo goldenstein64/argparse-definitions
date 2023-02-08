@@ -12,7 +12,7 @@ Some features are missing from the library simply because the LSP doesn't suppor
 	"Lua.workspace.library": [
 		// path to wherever this repo was cloned to
 		"path/to/this/repo",
-		// e.g. on Windows, "$USERPROFILE/Documents/LuaEnvironments/penlight"
+		// e.g. on Windows, "$USERPROFILE/Documents/LuaEnvironments/argparse"
 	]
 }
 ```
