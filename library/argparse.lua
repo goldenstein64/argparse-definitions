@@ -580,21 +580,24 @@ function Parser:help_description_margin(help_description_margin) end
 ---```
 function Parser:help_vertical_space(help_vertical_space) end
 
----Add a `--completion` option to this parser, which generates a shell completion script.
+---Add a `--completion` option to this parser, which generates a shell 
+---completion script.
 ---@generic self
 ---@param self self
 ---@param config? string|table -- Used to configure the option
 ---@return self
 function Parser:add_complete(config) end
 
----Add a `completion` command to this parser, which generates a shell completion script.
+---Add a `completion` command to this parser, which generates a shell 
+---completion script.
 ---@generic self
 ---@param self self
 ---@param config? string|table -- Used to configure the command
 ---@return self
 function Parser:add_complete_command(config) end
 
----Configure the help option. Set to `false` to remove the help option or `true` to set to default.
+---Configure the help option. Set to `false` to remove the help option or 
+---`true` to set to default.
 ---@generic self
 ---@param self self
 ---@param config string|table|boolean
@@ -669,6 +672,7 @@ function Parser:handle_options(handle_options) end
 
 --#region Argument
 
+---A positional input created by `Parser:argument()`.
 ---@class argparse.Argument
 ---@operator call(argparse.Argument.PropertiesTable): argparse.Argument
 local Argument = {}
@@ -1160,6 +1164,8 @@ function Argument:target(target) end
 
 --#region Option
 
+---A dash-delimited key-value input created by `Parser:option` or 
+---`Parser:flag`.
 ---@class argparse.Option : argparse.Argument
 ---@operator call(argparse.Option.PropertiesTable): argparse.Option
 local Option = {}
