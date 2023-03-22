@@ -1,0 +1,7 @@
+{
+	"name": "argparse",
+	"words": [
+		"require%s*%(%s*(['\"])argparse%1%s*%)",
+		"require%s*(['\"])argparse%1"
+	]
+}
