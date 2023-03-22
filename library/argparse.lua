@@ -176,7 +176,7 @@ function Parser:argument(name, description, default, convert, args) end
 ---As with arguments, the index can be explicitly set using `target` property.
 function Parser:option(name, description, default, convert, args, count) end
 
----Add a flag to the parser, which is almost identical to options, except that 
+---Add a flag to the parser, which is almost identical to options, except that
 ---they don't take an argument by default.
 ---@param name string -- This flag's name or names, represented in the usage message as `[-n <name>]`
 ---@param description? string -- This flag's description, shown in the second column of the help message.
@@ -580,7 +580,7 @@ function Parser:help_description_margin(help_description_margin) end
 ---```
 function Parser:help_vertical_space(help_vertical_space) end
 
----Add a `--completion` option to this parser, which generates a shell 
+---Add a `--completion` option to this parser, which generates a shell
 ---completion script.
 ---@generic self
 ---@param self self
@@ -588,7 +588,7 @@ function Parser:help_vertical_space(help_vertical_space) end
 ---@return self
 function Parser:add_complete(config) end
 
----Add a `completion` command to this parser, which generates a shell 
+---Add a `completion` command to this parser, which generates a shell
 ---completion script.
 ---@generic self
 ---@param self self
@@ -596,7 +596,7 @@ function Parser:add_complete(config) end
 ---@return self
 function Parser:add_complete_command(config) end
 
----Configure the help option. Set to `false` to remove the help option or 
+---Configure the help option. Set to `false` to remove the help option or
 ---`true` to set to default.
 ---@generic self
 ---@param self self
@@ -781,14 +781,14 @@ function Argument:choices(choices) end
 ---# }
 ---```
 ---
----The existence of a default value is reflected in help message, unless 
+---The existence of a default value is reflected in help message, unless
 ---`show_default` property is set to `false`.
 ---
 ---Console:
 ---```sh
 ---$ lua script.lua --help
 ---# Usage: script.lua [-h] [-o <output>]
----# 
+---#
 ---# Options:
 ---#    -h, --help            Show this help message and exit.
 ---#    -o <output>, --output <output>
@@ -801,7 +801,7 @@ function Argument:choices(choices) end
 ---```sh
 ---$ lua script.lua -o
 ---# Usage: script.lua [-h] [-o <output>]
----# 
+---#
 ---# Error: too few arguments
 ---```
 function Argument:default(default) end
@@ -833,14 +833,14 @@ function Argument:default(default) end
 ---# }
 ---```
 ---
----The existence of a default value is reflected in help message, unless 
+---The existence of a default value is reflected in help message, unless
 ---`show_default` property is set to `false`.
 ---
 ---Console:
 ---```sh
 ---$ lua script.lua --help
 ---# Usage: script.lua [-h] [-o <output>]
----# 
+---#
 ---# Options:
 ---#    -h, --help            Show this help message and exit.
 ---#    -o <output>, --output <output>
@@ -1164,7 +1164,7 @@ function Argument:target(target) end
 
 --#region Option
 
----A dash-delimited key-value input created by `Parser:option` or 
+---A dash-delimited key-value input created by `Parser:option` or
 ---`Parser:flag`.
 ---@class argparse.Option : argparse.Argument
 ---@operator call(argparse.Option.PropertiesTable): argparse.Option
@@ -1182,7 +1182,7 @@ local Option = {}
 ---@return self
 function Option:name(name) end
 
----Set this option's description, shown in the second column of the help 
+---Set this option's description, shown in the second column of the help
 ---message.
 ---@generic self
 ---@param self self
